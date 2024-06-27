@@ -3,6 +3,13 @@ Android KeyStore System for Flutter application
 
 ## Installation
 
+1. Standard installation
+```yaml
+dependencies:
+  flutter_keystore: ^0.0.1
+```
+
+2. Using GitHub url
 ```yaml
 dependencies:
   flutter_keystore:
