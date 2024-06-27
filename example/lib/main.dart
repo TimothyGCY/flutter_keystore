@@ -16,35 +16,52 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
+  String _storeValue = '';
   final _flutterKeystorePlugin = FlutterKeystore();
+  final String myDataKey = 'hello';
+  final TextEditingController _valueController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+    _loadStoreData();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
+  @override
+  void dispose() {
+    _valueController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadStoreData() async {
+    String value;
     try {
-      platformVersion =
-          await _flutterKeystorePlugin.read('hel') ?? 'Unknown platform version';
+      value = await _flutterKeystorePlugin.read(myDataKey) ?? '(Empty)';
     } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
+      value = 'Failed to read store value';
     }
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
     if (!mounted) return;
 
     setState(() {
-      _platformVersion = platformVersion;
+      _storeValue = value;
     });
+  }
+
+  Future<void> _onSave() async {
+    final String value = _valueController.text.trim();
+    if (value.isEmpty) {
+      await _onDelete();
+    } else {
+      await _flutterKeystorePlugin.write(myDataKey, value);
+    }
+    _valueController.clear();
+    _loadStoreData();
+  }
+
+  Future<void> _onDelete() async {
+    await _flutterKeystorePlugin.delete(myDataKey);
+    _loadStoreData();
   }
 
   @override
@@ -54,8 +71,46 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+        body: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: Text('Value in keystore: $_storeValue'),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                    child: TextField(
+                      controller: _valueController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        label: Text('Value in store'),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _onSave,
+                        child: const Text('Save'),
+                      ),
+                      const SizedBox(width: 24),
+                      ElevatedButton(
+                        onPressed: _onDelete,
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

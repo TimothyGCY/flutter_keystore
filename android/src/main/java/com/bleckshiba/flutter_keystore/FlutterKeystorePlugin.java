@@ -11,6 +11,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 public class FlutterKeystorePlugin implements FlutterPlugin, MethodCallHandler {
+  private static final String CHANNEL = "com.bleckshiba.dev/keystore";
+
   private MethodChannel channel;
 
   private Context context;
@@ -18,7 +20,7 @@ public class FlutterKeystorePlugin implements FlutterPlugin, MethodCallHandler {
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     context = flutterPluginBinding.getApplicationContext();
-    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "flutter_keystore");
+    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), CHANNEL);
     channel.setMethodCallHandler(this);
   }
 
